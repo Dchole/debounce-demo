@@ -1,28 +1,63 @@
-import { useEffect, useState } from "react"
-import LoginForm from "./components/LoginForm/LoginForm"
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  CssBaseline,
+  Typography,
+  useTheme
+} from "@material-ui/core";
+import LoginForm from "./components/LoginForm";
 
-export const API = "https://jsonplaceholder.typicode.com/users"
+export const API = "https://jsonplaceholder.typicode.com/users";
 
 export default function App() {
-  const [availableUsers, setAvailableUsers] = useState([])
+  const { typography } = useTheme();
+  const [availableUsers, setAvailableUsers] = useState([]);
 
   useEffect(() => {
-    ;(async () => {
-      const users = await fetch(API).then(res => res.json())
-      setAvailableUsers(_prevUsers => [...users.map(user => user.name)])
-    })()
-  }, [])
+    (async () => {
+      const users = await fetch(API).then((res) => res.json());
+      setAvailableUsers((_prevUsers) => [...users.map((user) => user.name)]);
+    })();
+  }, []);
 
   return (
-    <main>
-      <h1>Sign in</h1>
-      <h2>Available Users</h2>
-      <ul>
-        {availableUsers.map(user => (
+    <Container maxWidth="md">
+      <CssBaseline />
+      <Typography
+        variant="h3"
+        component="h1"
+        align="center"
+        fontSize={700}
+        fontFamily={typography.heading.fontFamily}
+      >
+        Sign in
+      </Typography>
+      <Typography
+        variant="h4"
+        component="h2"
+        align="center"
+        fontSize={600}
+        fontFamily={typography.heading.fontFamily}
+      >
+        Available Users
+      </Typography>
+      <Box
+        component="ul"
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.5rem 2rem",
+          "& li": {
+            wordWrap: "white-space"
+          }
+        }}
+      >
+        {availableUsers.map((user) => (
           <li key={user}>{user}</li>
         ))}
-      </ul>
+      </Box>
       <LoginForm availableUsers={availableUsers} />
-    </main>
-  )
+    </Container>
+  );
 }
