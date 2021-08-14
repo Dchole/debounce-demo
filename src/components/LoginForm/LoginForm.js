@@ -1,57 +1,46 @@
-import { useCallback, useState } from "react"
+import { useCallback, useReducer, useState } from "react"
 import { Field, Form, Formik } from "formik"
 import { TextField } from "formik-material-ui"
 import {
-  Box,
   Button,
   CircularProgress,
   Container,
   InputAdornment
 } from "@material-ui/core"
-import { API } from "../../App"
-import { capitalizeInput } from "../utils"
-import useDebounce from "../../hooks/useDebounce"
+import { Check } from "@material-ui/icons"
 import { initialValues, validationSchema } from "./formik-config"
+import { validateWithAPI } from "../utils"
+import useDebounce from "../../hooks/useDebounce"
+import validationReducer, { initialState } from "../validationReducer"
 
 /** @type {React.FC<{availableUsers: string[]}>} */
 const LoginForm = ({ availableUsers }) => {
-  const [error, setError] = useState(initialValues)
-  const [values, setValues] = useState(initialValues)
   const [validatingField, setValidatingField] = useState("")
+  const [error, setError] = useState(false)
+  const [state, dispatch] = useReducer(validationReducer, initialState)
 
-  const validateUsername = useCallback(async () => {
-    const capitalizedInput = capitalizeInput(values.username)
-    const encodedName = encodeURIComponent(capitalizedInput)
-    const isUserAvailable = availableUsers.some(name =>
-      name.startsWith(capitalizedInput)
-    )
+  const validateField = useCallback(async () => {
+    if (state[validatingField]?.value && !error) {
+      try {
+        const { valid, message } = await validateWithAPI(validatingField, {
+          [validatingField]: state[validatingField].value
+        })
 
-    if (values.username && !isUserAvailable) {
-      return setError(prevError => ({
-        ...prevError,
-        username: "username is not available"
-      }))
-    }
-
-    setError(initialValues)
-    try {
-      const [userDetails] = await fetch(`${API}?name=${encodedName}`).then(
-        res => res.json()
-      )
-      console.log(userDetails)
-      // setUserDetails((prevDetails) => ({ ...prevDetails, ...userDetails }));
-    } catch (error) {
-      console.log(error.message)
-    } finally {
+        dispatch({
+          field: validatingField,
+          payload: { valid, helperText: message }
+        })
+      } catch (error) {
+        console.log(error.message)
+      } finally {
+        setValidatingField("")
+      }
+    } else {
       setValidatingField("")
     }
-  }, [values.username, availableUsers])
+  }, [state, error, validatingField])
 
-  const validateEmail = useCallback(() => {}, [values.email])
-  const validatePassword = useCallback(() => {}, [values.password])
-
-  useDebounce(validateUsername)
-  useDebounce(validateEmail)
+  useDebounce(validateField)
 
   /**
    * @typedef {typeof initialValues} TValues
@@ -68,27 +57,27 @@ const LoginForm = ({ availableUsers }) => {
 
   /**
    * @typedef {import("formik").FormikProps<TValues>} FormikProps
-   */
-  /**
+   *
    * Function that returns a custom onChange event handler
    * The handler sets user input value to state value for external validation
    * @function
    * @param {FormikProps['handleChange']} handleChange - handleChange handler from formik props
    * @param {FormikProps['errors']} formikErrors - formik errors
-   * @param {FormikProps['setErrors']} setFormikErrors - formik action to set errors
    * @returns {(event: React.ChangeEvent<HTMLFormElement>) => void} returns custom onChange event handler
    */
-  const handleChangeCustom =
-    (handleChange, formikErrors, setFormikErrors) => event => {
-      setValidatingField(event.target.name)
-      handleChange(event)
-      setFormikErrors({ ...formikErrors, username: error.username })
+  const handleChangeCustom = (handleChange, formikErrors) => event => {
+    setValidatingField(event.target.value ? event.target.name : "")
+    handleChange(event)
+    setError(Boolean(formikErrors[event.target.name]))
 
-      setValues(prevValues => ({
-        ...prevValues,
-        [event.target.name]: event.target.value
-      }))
-    }
+    dispatch({
+      field: event.target.name,
+      payload: {
+        value: event.target.value,
+        helperText: ""
+      }
+    })
+  }
 
   return (
     <Container maxWidth="xs">
@@ -97,10 +86,10 @@ const LoginForm = ({ availableUsers }) => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ isSubmitting, handleChange, errors, setErrors }) => (
+        {({ isSubmitting, handleChange, errors }) => (
           <Form
+            onChange={handleChangeCustom(handleChange, errors)}
             autoComplete="off"
-            onChange={handleChangeCustom(handleChange, errors, setErrors)}
           >
             <Field
               component={TextField}
@@ -110,10 +99,22 @@ const LoginForm = ({ availableUsers }) => {
               label="Username"
               variant="outlined"
               autoCapitalize="word"
-              helperText="Username must be available"
               placeholder={
                 availableUsers.length ? `Ex. ${availableUsers[0]}` : ""
               }
+              color={
+                !errors.username && state.username.valid ? "success" : "primary"
+              }
+              sx={{
+                "& .MuiFormHelperText-root": {
+                  color:
+                    !errors.username && state.username.valid
+                      ? "green"
+                      : undefined
+                }
+              }}
+              helperText={state.username.helperText}
+              error={Boolean(errors.username) || !state.username.valid}
               autoFocus
               fullWidth
               InputProps={{
@@ -121,6 +122,10 @@ const LoginForm = ({ availableUsers }) => {
                   validatingField === "username" ? (
                     <InputAdornment position="end">
                       <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : state.username.valid ? (
+                    <InputAdornment position="end">
+                      <Check color="success" />
                     </InputAdornment>
                   ) : undefined
               }}
@@ -132,13 +137,25 @@ const LoginForm = ({ availableUsers }) => {
               name="email"
               label="Email"
               variant="outlined"
-              helperText="Enter any valid email"
+              color={!errors.email && state.email.valid ? "success" : undefined}
+              sx={{
+                "& .MuiFormHelperText-root": {
+                  color:
+                    !errors.email && state.email.valid ? "green" : undefined
+                }
+              }}
+              helperText={state.email.helperText}
+              error={Boolean(errors.email) || !state.email.valid}
               fullWidth
               InputProps={{
                 endAdornment:
                   validatingField === "email" ? (
                     <InputAdornment position="end">
                       <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : state.email.valid ? (
+                    <InputAdornment position="end">
+                      <Check color="success" />
                     </InputAdornment>
                   ) : undefined
               }}
@@ -148,9 +165,23 @@ const LoginForm = ({ availableUsers }) => {
               id="current-password"
               margin="normal"
               name="password"
+              type="password"
               label="Password"
               variant="outlined"
               autoComplete="current-password"
+              color={
+                !errors.password && state.password.valid ? "success" : undefined
+              }
+              sx={{
+                "& .MuiFormHelperText-root": {
+                  color:
+                    !errors.password && state.password.valid
+                      ? "green"
+                      : undefined
+                }
+              }}
+              helperText={state.password.helperText}
+              error={Boolean(errors.password) || !state.password.valid}
               fullWidth
               InputProps={{
                 endAdornment:
@@ -158,21 +189,27 @@ const LoginForm = ({ availableUsers }) => {
                     <InputAdornment position="end">
                       <CircularProgress size={20} />
                     </InputAdornment>
+                  ) : state.password.valid ? (
+                    <InputAdornment position="end">
+                      <Check color="success" />
+                    </InputAdornment>
                   ) : undefined
               }}
             />
-            <Box mt={2}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={isSubmitting}
-                disableElevation={isSubmitting}
-              >
-                Sign in {isSubmitting && <CircularProgress size={24} />}
-              </Button>
-            </Box>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isSubmitting}
+              disableElevation={isSubmitting}
+              sx={{ mt: 2 }}
+            >
+              Sign in{" "}
+              {isSubmitting && (
+                <CircularProgress size={24} sx={{ position: "absolute" }} />
+              )}
+            </Button>
           </Form>
         )}
       </Formik>
