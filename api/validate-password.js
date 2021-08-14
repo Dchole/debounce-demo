@@ -1,14 +1,18 @@
+import checkPassword from "hibp-checker"
+
 /**
  * @function
  * @param {import("@vercel/node").VercelRequest} req
  * @param {import("@vercel/node").VercelResponse} res
  */
+const handler = async (req, res) => {
+  const compromised = await checkPassword(req.body.password)
 
-const handler = (req, res) => {
   res.json({
-    body: req.body,
-    query: req.query,
-    cookies: req.cookies
+    valid: !compromised,
+    message: compromised
+      ? "This password has been compromised, Please try again"
+      : undefined
   })
 }
 
