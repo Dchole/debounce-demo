@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@abstractapi/javascript-email-validation": "^1.0.1",
     "@emotion/react": "11.4.1",
     "@emotion/styled": "11.3.0",
     "@fontsource/montserrat": "4.5.1",
@@ -12,7 +11,6 @@
     "@material-ui/icons": "5.0.0-beta.1",
     "axios": "^0.21.1",
     "deep-email-validator": "^0.1.18",
-    "email-verify": "^0.2.1",
     "formik": "2.2.9",
     "formik-material-ui": "3.0.1",
     "hibp-checker": "^1.0.0",
@@ -49,7 +47,6 @@
   },
   "devDependencies": {
     "@types/mailcheck": "^1.1.33",
-    "@vercel/node": "^1.12.1",
-    "vercel": "^23.1.2"
+    "@vercel/node": "^1.12.1"
   }
 }
