@@ -1,5 +1,5 @@
 import axios from "axios"
-import { capitalizeInput } from "../src/components/utils"
+import { capitalizeInput } from "../src/utils/capitalize-input"
 
 /**
  * @function
@@ -19,9 +19,7 @@ const handler = async (req, res) => {
 
     res.json({
       valid: Boolean(user),
-      message: user
-        ? "Username available"
-        : `"${req.body.username}" isn't available in our database`
+      message: user ? "Username available" : "Username not available"
     })
   } catch (error) {
     console.log(error.message)

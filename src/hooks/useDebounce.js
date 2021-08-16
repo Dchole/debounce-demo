@@ -27,7 +27,7 @@ const useDebounce = (cb, wait = 800, args = []) => {
     /* eslint-disable react-hooks/exhaustive-deps */
     // used args.join(",") instead of just args
     // because passing an array as a dependency causes useEffect re-render infinitely
-  }, [cb, wait, args])
+  }, [cb, wait, args.join(",")])
 }
 
 export default useDebounce

@@ -12,7 +12,7 @@ const handler = async (req, res) => {
       mailcheck.run({
         email: req.body.email,
         suggested: ({ domain, full }) => {
-          res.status(400).json({
+          res.json({
             valid: false,
             message: `Did you mean ${full} instead? Change ${
               req.body.email.split("@")[1]
