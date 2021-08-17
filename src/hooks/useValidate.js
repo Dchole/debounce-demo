@@ -50,7 +50,7 @@ const useValidate = () => {
       const inValidFields = []
       const validationResults = Object.entries(values)
         .map(([key, value]) => {
-          if (key === changingField && value) {
+          if (key === changingField && !errors[key] && value) {
             return validateWithAPI(key, value)
           }
 
@@ -87,7 +87,7 @@ const useValidate = () => {
         return [...stillValid, ...validFields]
       })
     }
-  }, [values, validatingFields, changingField])
+  }, [values, errors, validatingFields, changingField])
 
   useDebounce(validateField)
 
