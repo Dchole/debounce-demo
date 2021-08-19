@@ -4,7 +4,11 @@ import Field from "./Field"
 import useValidate from "../../hooks/useValidate"
 
 /**
- * @type {React.FC<{availableUsers: string[]}>}
+ * @typedef {Object} Props
+ * @prop {string[]} availableUsers - List of names of available users
+ */
+/**
+ * @type {React.FC<Props>} props
  */
 const LoginForm = ({ availableUsers }) => {
   const {

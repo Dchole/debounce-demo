@@ -38,7 +38,9 @@ const useValidate = () => {
 
   const customHandleSubmit = event => {
     event.preventDefault()
-    if (validFields.length === 3) {
+
+    /* Only submit form if all fields are valid */
+    if (validFields.length === Object.keys(initialValues).length) {
       handleSubmit(event)
     }
   }
@@ -50,6 +52,7 @@ const useValidate = () => {
       const inValidFields = []
       const validationResults = Object.entries(values)
         .map(([key, value]) => {
+          // Check if the changingField (the active field) has no formik errors and it isn't empty
           if (key === changingField && !errors[key] && value) {
             return validateWithAPI(key, value)
           }
