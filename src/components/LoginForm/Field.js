@@ -1,27 +1,22 @@
 import PropTypes from "prop-types"
-import { CircularProgress, InputAdornment, TextField } from "@material-ui/core"
-import { Check } from "@material-ui/icons"
+import {
+  CircularProgress,
+  InputAdornment,
+  TextField,
+  Tooltip
+} from "@material-ui/core"
+import { Check, Warning } from "@material-ui/icons"
 import { capitalize } from "lodash"
 
 /**
- * @typedef {Object} Props
- * @prop {string} name - field name and identifier
- * @prop {boolean} error - determines weather field has error
- * @prop {boolean} valid - determines weather field is valid
- * @prop {boolean} validating - determines weather field is validating
- * @prop {string} value - field value
- * @prop {string} helperText - field description/message
- * @prop {string} placeholder - placeholder text for field
- * @prop {VoidFunction} handleChange - custom handleChange function
- */
-/**
- * @type {React.FC<Props>} props
+ * @param {import("prop-types").InferType<CustomField.propTypes>} props
  */
 const CustomField = ({
   name,
   error,
   value,
   valid,
+  failed,
   validating,
   helperText,
   placeholder,
@@ -36,7 +31,7 @@ const CustomField = ({
       id={name}
       name={name}
       value={value}
-      color={valid ? "success" : undefined}
+      color={valid ? "success" : failed ? "warning" : undefined}
       placeholder={name === "username" ? placeholder : undefined}
       label={capitalize(name)}
       margin="normal"
@@ -55,17 +50,25 @@ const CustomField = ({
           <InputAdornment position="end">
             <Check color="success" />
           </InputAdornment>
+        ) : failed ? (
+          <Tooltip placement="right" title={failed} arrow>
+            <InputAdornment position="end">
+              <Warning color="warning" />
+            </InputAdornment>
+          </Tooltip>
         ) : undefined
       }}
     />
   )
 }
 
-CustomField.prototype = {
+CustomField.propTypes = {
   name: PropTypes.string.isRequired,
   error: PropTypes.bool.isRequired,
   valid: PropTypes.bool.isRequired,
+  failed: PropTypes.string.isRequired,
   validating: PropTypes.bool.isRequired,
+  helperText: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   handleChange: PropTypes.func.isRequired
 }

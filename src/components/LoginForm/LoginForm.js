@@ -15,6 +15,7 @@ const LoginForm = ({ availableUsers }) => {
     values,
     errors,
     validFields,
+    failedFields,
     handleChange,
     handleSubmit,
     isSubmitting,
@@ -33,6 +34,7 @@ const LoginForm = ({ availableUsers }) => {
             error={Boolean(errors[key])}
             helperText={errors[key]}
             valid={validFields.includes(key)}
+            failed={failedFields[key]}
             placeholder={
               availableUsers.length ? `Ex. ${availableUsers[0]}` : ""
             }

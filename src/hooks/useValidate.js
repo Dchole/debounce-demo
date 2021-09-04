@@ -52,45 +52,54 @@ const useValidate = () => {
       let copyValidatingFields = []
       const inValidFields = []
 
-      const validationResults = Object.entries(values)
-        .map(async ([key, value]) => {
-          // Check if the changingField (the active field) has no formik errors and it isn't empty
-          if (key === changingField && !errors[key] && value) {
-            return validateWithAPI(key, value)
-          }
+      try {
+        const validationResults = Object.entries(values)
+          .map(([key, value]) => {
+            // Check if the changingField (the active field) has no formik errors and it isn't empty
+            if (key === changingField && !errors[key] && value) {
+              return validateWithAPI(key, value)
+            }
 
-          return null
+            return null
+          })
+          .filter(Boolean)
+
+        const validationResult = await Promise.all(validationResults)
+
+        const validFields = validationResult
+          .map(({ valid, message, field }) => {
+            if (!valid) {
+              copyValidatingFields = validatingFields.filter(
+                validatingField => validatingField !== field
+              )
+              inValidFields.push(field)
+              setAPIErrors(prevErrors => ({ ...prevErrors, [field]: message }))
+            }
+
+            return valid ? field : null
+          })
+          .filter(Boolean)
+
+        const validFieldObject = Object.fromEntries([validFields]) // valid field object to overwrite existing errors
+
+        setValidatingFields(copyValidatingFields)
+        setAPIErrors(prevErrors => ({ ...prevErrors, ...validFieldObject }))
+
+        setValidFields(prevFields => {
+          const stillValid = prevFields.filter(
+            field => !inValidFields.includes(field)
+          )
+
+          return [...stillValid, ...validFields]
         })
-        .filter(Boolean)
-
-      const validationResult = await Promise.all(validationResults)
-
-      const validFields = validationResult
-        .map(({ valid, message, field }) => {
-          if (!valid) {
-            copyValidatingFields = validatingFields.filter(
-              validatingField => validatingField !== field
-            )
-            inValidFields.push(field)
-            setAPIErrors(prevErrors => ({ ...prevErrors, [field]: message }))
-          }
-
-          return valid ? field : null
-        })
-        .filter(Boolean)
-
-      const validFieldObject = Object.fromEntries([validFields]) // valid field object to overwrite existing errors
-
-      setValidatingFields(copyValidatingFields)
-      setAPIErrors(prevErrors => ({ ...prevErrors, ...validFieldObject }))
-
-      setValidFields(prevFields => {
-        const stillValid = prevFields.filter(
-          field => !inValidFields.includes(field)
-        )
-
-        return [...stillValid, ...validFields]
-      })
+      } catch (error) {
+        if (Object.keys(initialValues).includes(error.name)) {
+          setFailedFields(prevFields => ({
+            ...prevFields,
+            [error.name]: error.message
+          }))
+        }
+      }
     }
   }, [values, errors, validatingFields, changingField])
 

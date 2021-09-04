@@ -23,19 +23,15 @@ export const validateWithAPI = async (field, value) => {
       throw new Error(res.statusText)
     }
 
-    console.log(data, res.ok)
-
     return { ...data, field }
   } catch (error) {
-    console.log({ error })
-
     const customError = new Error(
       `${capitalize(
         field
       )} validation failed\nBut don't fling. Go and and submit your form`
     )
-    customError.name = field
 
+    customError.name = field
     throw customError
   }
 }
