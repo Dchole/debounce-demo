@@ -51,7 +51,7 @@ const CustomField = ({
             <Check color="success" />
           </InputAdornment>
         ) : failed ? (
-          <Tooltip placement="left" title={failed} arrow>
+          <Tooltip placement="right" title={failed} arrow>
             <InputAdornment position="end">
               <Warning color="warning" />
             </InputAdornment>
