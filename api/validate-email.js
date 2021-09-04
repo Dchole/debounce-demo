@@ -23,7 +23,7 @@ const handler = async (req, res) => {
           const { reason } = await validator(req.body.email)
 
           res.json({
-            valid: true,
+            valid: reason !== "disposable",
             message:
               reason === "disposable"
                 ? "Disposable emails are not accepted"

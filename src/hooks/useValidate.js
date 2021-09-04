@@ -28,6 +28,7 @@ const useValidate = () => {
   const [validatingFields, setValidatingFields] = useState([])
   const [customErrors, setCustomErrors] = useState(initialValues)
   const [APIErrors, setAPIErrors] = useState(initialValues)
+  const [failedFields, setFailedFields] = useState(initialValues)
   const [validFields, setValidFields] = useState([])
 
   const customHandleChange = event => {
@@ -50,8 +51,9 @@ const useValidate = () => {
     if (validatingFields.length) {
       let copyValidatingFields = []
       const inValidFields = []
+
       const validationResults = Object.entries(values)
-        .map(([key, value]) => {
+        .map(async ([key, value]) => {
           // Check if the changingField (the active field) has no formik errors and it isn't empty
           if (key === changingField && !errors[key] && value) {
             return validateWithAPI(key, value)
@@ -110,6 +112,7 @@ const useValidate = () => {
     validFields,
     validatingFields,
     errors: customErrors,
+    failedFields,
     isSubmitting,
     handleChange: customHandleChange,
     handleSubmit: customHandleSubmit,

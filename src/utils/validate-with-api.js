@@ -1,3 +1,5 @@
+import { capitalize } from "@material-ui/core/utils"
+
 /**
  * Handles api requests
  * @function
@@ -6,13 +8,34 @@
  * @returns {Promise<{valid: boolean, message: string}>}
  */
 export const validateWithAPI = async (field, value) => {
-  const data = await fetch(`/api/validate-${field}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ [field]: value })
-  }).then(res => res.json())
+  try {
+    const res = await fetch(`/api/validate-${field}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ [field]: value })
+    })
 
-  return { ...data, field }
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(res.statusText)
+    }
+
+    console.log(data, res.ok)
+
+    return { ...data, field }
+  } catch (error) {
+    console.log({ error })
+
+    const customError = new Error(
+      `${capitalize(
+        field
+      )} validation failed\nBut don't fling. Go and and submit your form`
+    )
+    customError.name = field
+
+    throw customError
+  }
 }
