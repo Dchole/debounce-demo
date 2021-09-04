@@ -28,7 +28,7 @@ export const validateWithAPI = async (field, value) => {
     const customError = new Error(
       `${capitalize(
         field
-      )} validation failed\nBut don't fling. Go and and submit your form`
+      )} validation failed. \nBut don't fling. Go and and submit your form`
     )
 
     customError.name = field

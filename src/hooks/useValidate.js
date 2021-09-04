@@ -93,7 +93,12 @@ const useValidate = () => {
           return [...stillValid, ...validFields]
         })
       } catch (error) {
+        console.log(error.message)
         if (Object.keys(initialValues).includes(error.name)) {
+          setValidatingFields(prevFields =>
+            prevFields.filter(field => field !== error.name)
+          )
+
           setFailedFields(prevFields => ({
             ...prevFields,
             [error.name]: error.message
